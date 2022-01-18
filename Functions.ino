@@ -29,6 +29,7 @@ void getButtons() {
 
 
 void getPoti() {
+  ms = millis();
 
   analog1.update();                            // Stage 1 Smoothing
   potiIn = analog1.getValue();
