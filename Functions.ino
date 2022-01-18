@@ -5,41 +5,47 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
   if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
     idleTemp = potiOut;
     sleepTimer = ms;
-    idleOn = true;
   }
 
-  if (ms - sleepTimer > idleTimer && idleOn) {
+  if (ms - sleepTimer > idleTimer) {
+    idleOn = true;
     taskManager.reset();
     setCpuFrequencyMhz(80);
+    taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
+    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
-    Serial.println(getCpuFrequencyMhz());
+    Serial.print(getCpuFrequencyMhz());
+    Serial.println("Mhz");
 #endif
-
-    taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
-    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
 
     while (ms - sleepTimer > idleTimer) {
       taskManager.runLoop();
+
       if (potiOut - servoTemp >= 3 || potiOut - servoTemp <= -3) {
         break;
       }
     }
+
     taskManager.reset();
     setCpuFrequencyMhz(240);
     idleOn = false;
     idleTemp = potiOut;
-    if (smoothMode) {
-      for (i = 0; i < 125 / spMultiplier; i++) {  // lets Moving Average catch up with new value
-        smooth1.addSample(potiValue);
-      }
-    }
 #ifdef DEBUG
     Serial.println("Normal Speed");
     Serial.print("CPU: ");
-    Serial.println(getCpuFrequencyMhz());
+    Serial.print(getCpuFrequencyMhz());
+    Serial.println("Mhz");
 #endif
+
+    getPoti();
+    if (smoothMode) {
+      for (i = 0; i < 150; i++) {  // lets Moving Average catch up with new value
+        smooth1.addSample(potiValue);
+      }
+    }
+    writeServo();
 
     taskManager.scheduleFixedRate(4,   getPoti,     TIME_MILLIS);   // 250hz
     taskManager.scheduleFixedRate(3,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
@@ -72,7 +78,7 @@ void getButtons() {
 #ifdef DEBUG
     Serial.println("                        Button Press");
 #endif
-  } else if (ms - buttonTime < 600) {
+  } else if (ms - buttonTime < 600) {  // double click
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG

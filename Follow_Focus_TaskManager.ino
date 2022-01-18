@@ -48,7 +48,7 @@
 #define           servoPin   25
 
 byte              spMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
-#define           smoothValue   250 / spMultiplier // Smooth Mode Smoothing 0-255
+#define           smoothValue   100 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
@@ -87,6 +87,7 @@ void setup() {
   u8g2.setFont(font);
 
   Wire.begin(SDA1, SCL1, 400000);
+  if (getCpuFrequencyMhz() != 240) setCpuFrequencyMhz(240);
 
   pinMode(buttonPin, INPUT_PULLDOWN);
   pinMode(potiPin, INPUT_PULLDOWN);
