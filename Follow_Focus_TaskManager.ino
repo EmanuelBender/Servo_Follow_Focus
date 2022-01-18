@@ -29,7 +29,7 @@
 #define           potiPin    4
 #define           servoPin   25
 
-#define           smoothValue   60         // Smooth Mode Smoothing 0-255
+#define           smoothValue   100         // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
@@ -43,7 +43,7 @@ byte              fontY = 30;
 //=============== ADJUSTABLES END ================================
 
 double            potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp;
-unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms;
+unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us;
 bool              buttonIn,   buttonBool, smoothMode;
 
 U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -54,17 +54,21 @@ Servo servo;
 //
 // A simple logging function that logs the time and the log line.
 //
-void logIt(const char* toLog) {
+void logIt(const char* toLog, unsigned long int cTime) {
+#ifdef DEBUG
   Serial.print(millis());
-  Serial.print(':');
+  Serial.print("ms: ");
+  Serial.print(cTime);
+  Serial.print("us - ");
   Serial.println(toLog);
+#endif
 }
 
 
 void setup() {
 
 #ifdef DEBUG
-  Serial.begin(115200);
+  Serial.begin(500000);
   delay(300);
 #endif
 
@@ -97,34 +101,55 @@ void setup() {
   }
 
 
+
   taskManager.scheduleFixedRate(20, [] {
-    logIt("20ms  writeScreen");
+    us = micros();
     writeScreen();
+#ifdef DEBUG
+    codeTime = micros() - us;
+    logIt("20ms  writeScreen", codeTime);
+#endif
   });
 
   taskManager.scheduleFixedRate(30, [] {
-    logIt("30ms  getButtons");
+    us = micros();
     getButtons();
+#ifdef DEBUG
+    codeTime = micros() - us;
+    logIt(" 30ms  getButtons", codeTime);
+#endif
   });
 
   taskManager.scheduleFixedRate(1000, [] {
-    logIt("1000ms    SleepMode...");
+    us = micros();
     sleepMode();
+#ifdef DEBUG
+    codeTime = micros() - us;
+    logIt("1000ms    SleepMode...", codeTime);
+#endif
   });
 
-  taskManager.scheduleFixedRate(250, onMicrosJobPoti, TIME_MICROS);
+  taskManager.scheduleFixedRate(150, onMicrosJobPoti, TIME_MICROS);
   taskManager.scheduleFixedRate(500, onMicrosJobServo, TIME_MICROS);
 }
 
 void onMicrosJobPoti() {
+  us = micros();
   getPoti();
-  logIt("250us getPoti");
+#ifdef DEBUG
+  codeTime = micros() - us;
+  logIt("150us getPoti", codeTime);
+#endif
 }
 
 void onMicrosJobServo() {
   ms = millis();
+  us = micros();
   writeServo();
-  logIt("500us writeServo");
+#ifdef DEBUG
+  codeTime = micros() - us;
+  logIt("500us writeServo", codeTime);
+#endif
 }
 
 void loop() {

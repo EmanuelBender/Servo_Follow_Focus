@@ -9,7 +9,7 @@ void getButtons() {
     buttonBool   = false;
 
     if (buttonIn) {
-
+      Serial.println("                :::::Button Press");
       buttonIn   = false;
       buttonBool = true;
       smoothMode = !smoothMode;
@@ -17,7 +17,7 @@ void getButtons() {
       sleepTimer = ms;
 
       if (smoothMode) {
-        for (i = 0; i < 60; i++) {  // lets Moving Average catch up with new value
+        for (i = 0; i < 200; i++) {  // lets Moving Average catch up with new value
           smooth1.addSample(potiValue);
         }
       }
