@@ -8,6 +8,7 @@ void getButtons() {
     buttonBool   = false;
 
     if (buttonIn) {
+     logIt("First Button Press");
       buttonIn   = false;
       buttonBool = true;
       smoothMode = !smoothMode;
@@ -23,8 +24,7 @@ void getButtons() {
   } else if (ms - buttonTime > 200 && digitalRead(buttonPin)) {   // else  detect second button press
 
 #ifdef DEBUG
-    Serial.println("Second Press");
-    delay(500);
+    logIt("Second Button Press");
 #endif
 
   }

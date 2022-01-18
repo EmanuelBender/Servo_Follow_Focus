@@ -133,10 +133,6 @@ void setup() {
 
 }
 
-//
-// All programs using TaskManager need to call taskManager.runLoop in the loop
-// method, and should never use delay(..)
-//
 void loop() {
   // Optional:
   // If you wanted to go into a low power mode between tasks, you can use taskManager.microsToNextTask() to determine
