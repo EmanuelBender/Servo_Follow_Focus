@@ -3,22 +3,27 @@
 ###### by eBender
  <br/>
  
-**Features:**  <br/>
+**Features**  <br/>
 Normal Mode (Stage 1 Smoothing with ResponsiveAnalogRead) <br/>
 Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/>
     
-**Specs:** <br/> 
+**Specs** <br/> 
 Servo Speed S0025M: 0.06sec     <br/>
-Responsiveness @ 240MHz: 0.01sec  <br/>
 
-**Variables:**  <br/>
+**Update Speeds**    <br/>
+Button: 20Hz      <br/>
+Poti: 1000Hz      <br/>
+Servo: 333Hz      <br/>
+Screen: 50fps     <br/>
+
+**Variables**  <br/>
 smoothValue       0-255 -    applies Moving Average smoothing strength <br/>
 Expo              0.0-4.0 -  applies exponential to the poti input <br/>
 Hertz             50-333Hz - for different Servo models and update speeds <br/>
 Sleep Mode Timer  0-64s - engages when poti set to 0 <br/>
 
 
-**Parts:** <br/>
+**Parts** <br/>
 ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)  <br/>
 0.42" 32x64 OLED I2C Screen  <br/>
 25g S0025M Servo (0.06-0.08s, 3KG, 333Hz, 2BB, MG)  <br/>
