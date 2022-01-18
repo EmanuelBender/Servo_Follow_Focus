@@ -47,7 +47,7 @@
 #define           potiPin    4
 #define           servoPin   25
 
-byte              spMultiplier = 2;        // tmIO - 1 normal, 2 half speed
+byte              spMultiplier = 1;        // tmIO - 1 normal, 2 half speed
 #define           smoothValue   140 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
