@@ -11,8 +11,7 @@ Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/>
 Servo Speed S0025M: 0.06sec     <br/>
 
 **Update Speeds**    <br/>
-Button: 20Hz      <br/>
-Poti: 1000Hz      <br/>
+Poti: 250Hz      <br/>
 Servo: 333Hz      <br/>
 Screen: 50fps     <br/>
 
