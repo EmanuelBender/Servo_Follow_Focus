@@ -2,7 +2,7 @@
 
 void idle() {  // detect idling to slow CPU and TaskManagerIO down when not explicitly put into sleep mode
 
-  if (potiOut - idleTemp >= 2 || potiOut - idleTemp <= -2) {
+  if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
     idleTemp = potiOut;
     sleepTimer = ms;
     idleOn = true;
@@ -17,8 +17,8 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     Serial.println(getCpuFrequencyMhz());
 #endif
 
-    taskManager.scheduleFixedRate(100,  getPoti,      TIME_MILLIS);   // 10hz
-    taskManager.scheduleFixedRate(1,    sleepMode,    TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
+    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
 
     while (ms - sleepTimer > idleTimer) {
       taskManager.runLoop();
@@ -26,17 +26,22 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
         break;
       }
     }
-    idleOn = false;
-    idleTemp = potiOut;
     taskManager.reset();
     setCpuFrequencyMhz(240);
+    idleOn = false;
+    idleTemp = potiOut;
+    if (smoothMode) {
+      for (i = 0; i < 125 / spMultiplier; i++) {  // lets Moving Average catch up with new value
+        smooth1.addSample(potiValue);
+      }
+    }
 #ifdef DEBUG
     Serial.println("Normal Speed");
     Serial.print("CPU: ");
     Serial.println(getCpuFrequencyMhz());
 #endif
 
-    taskManager.scheduleFixedRate(2,   getPoti,     TIME_MILLIS);   // 500hz
+    taskManager.scheduleFixedRate(4,   getPoti,     TIME_MILLIS);   // 250hz
     taskManager.scheduleFixedRate(3,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
     taskManager.scheduleFixedRate(20,  writeScreen, TIME_MILLIS);   // 50fps
     taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
@@ -54,9 +59,6 @@ void getButtons() {
 
   if (ms - buttonTime > 300) {       // button inactive 300ms after press
 
-#ifdef DEBUG
-    Serial.println("                        Button Press");
-#endif
     buttonBool = true;
     smoothMode = !smoothMode;
     buttonTime = ms;
@@ -67,11 +69,14 @@ void getButtons() {
         smooth1.addSample(potiValue);
       }
     }
+#ifdef DEBUG
+    Serial.println("                        Button Press");
+#endif
   } else if (ms - buttonTime < 600) {
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
-    Serial.println("                        Button Second Press");
+    Serial.println("                        Button 2nd Press");
 #endif
   }
 #ifdef DEBUG

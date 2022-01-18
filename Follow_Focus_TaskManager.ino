@@ -38,7 +38,7 @@
 
 //=============== ADJUSTABLES ===================================
 
-#define           DEBUG   // note that smoothing response is skewed by debug mode
+//#define           DEBUG   // note that response is a little bit skewed by debug mode
 
 #define           SDA1 21
 #define           SCL1 22
@@ -48,13 +48,13 @@
 #define           servoPin   25
 
 byte              spMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
-#define           smoothValue   140 / spMultiplier // Smooth Mode Smoothing 0-255
+#define           smoothValue   250 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
-unsigned int      sleepOff =    30000;     // Power save mode delay in ms
+unsigned int      sleepOff =    15000;     // Power save mode delay in ms
 #define           idleTimer     3000       // delay before idle  in ms
 
 
@@ -112,7 +112,7 @@ void setup() {
 
   taskManager.setInterruptCallback(interruptTask);
   taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
-  taskManager.scheduleFixedRate(2 * spMultiplier,    getPoti,     TIME_MILLIS);   // 500hz
+  taskManager.scheduleFixedRate(4 * spMultiplier,    getPoti,     TIME_MILLIS);   // 250hz
   taskManager.scheduleFixedRate(3 * spMultiplier,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * spMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
   taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
