@@ -47,7 +47,7 @@
 #define           potiPin    4
 #define           servoPin   25
 
-byte              spMultiplier = 1;        // tmIO - 1 normal, 2 half speed
+byte              spMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
 #define           smoothValue   140 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
@@ -55,6 +55,7 @@ unsigned int      potiEnd =     4500.0;    // Poti end stop
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
 unsigned int      sleepOff =    30000;     // Power save mode delay in ms
+#define           idleTimer     3000       // delay before idle  in ms
 
 
 const uint8_t*    font = u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
@@ -115,7 +116,7 @@ void setup() {
   taskManager.scheduleFixedRate(3 * spMultiplier,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * spMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
   taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
-  taskManager.scheduleFixedRate(500,                 idle,        TIME_MILLIS);   // 1hz
+  taskManager.scheduleFixedRate(250,                 idle,        TIME_MILLIS);   // 4hz
 
 }
 

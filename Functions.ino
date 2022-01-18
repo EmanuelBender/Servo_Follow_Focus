@@ -8,14 +8,19 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     idleOn = true;
   }
 
-  if (ms - sleepTimer > 3000 && idleOn) {
+  if (ms - sleepTimer > idleTimer && idleOn) {
     taskManager.reset();
     setCpuFrequencyMhz(80);
+#ifdef DEBUG
+    Serial.println("Idling...");
+    Serial.print("CPU: ");
+    Serial.println(getCpuFrequencyMhz());
+#endif
 
-    taskManager.scheduleFixedRate(125,  getPoti,      TIME_MILLIS);   // 8hz
+    taskManager.scheduleFixedRate(100,  getPoti,      TIME_MILLIS);   // 10hz
     taskManager.scheduleFixedRate(1,    sleepMode,    TIME_SECONDS);  // 1hz
 
-    while (ms - sleepTimer > 3000) {
+    while (ms - sleepTimer > idleTimer) {
       taskManager.runLoop();
       if (potiOut - servoTemp >= 3 || potiOut - servoTemp <= -3) {
         break;
@@ -25,12 +30,17 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     idleTemp = potiOut;
     taskManager.reset();
     setCpuFrequencyMhz(240);
+#ifdef DEBUG
+    Serial.println("Normal Speed");
+    Serial.print("CPU: ");
+    Serial.println(getCpuFrequencyMhz());
+#endif
 
-    taskManager.scheduleFixedRate(2,  getPoti,     TIME_MILLIS);   // 500hz
-    taskManager.scheduleFixedRate(3,  writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
-    taskManager.scheduleFixedRate(20, writeScreen, TIME_MILLIS);   // 50fps
-    taskManager.scheduleFixedRate(1,  sleepMode,   TIME_SECONDS);  // 1hz
-    taskManager.scheduleFixedRate(500, idle,        TIME_MILLIS);   // 1hz
+    taskManager.scheduleFixedRate(2,   getPoti,     TIME_MILLIS);   // 500hz
+    taskManager.scheduleFixedRate(3,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+    taskManager.scheduleFixedRate(20,  writeScreen, TIME_MILLIS);   // 50fps
+    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(250, idle,        TIME_MILLIS);   // 4hz
     taskManager.runLoop();
   }
 }
@@ -115,7 +125,7 @@ void writeScreen() {
   if (potiOut - potiTemp >= 2 || potiOut - potiTemp <= -2 || buttonBool) {
     buttonBool = false;
 #ifdef DEBUG
-    Serial.println("                        Screen Update");
+    Serial.println("                       Screen Update");
 #endif
     potiTemp   = potiOut;
 
@@ -130,7 +140,7 @@ void writeScreen() {
   }
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt("20ms writeScreen", codeTime);
+  logIt("20ms  writeScreen", codeTime);
 #endif
 }
 
