@@ -1,14 +1,29 @@
-/**
-   @file SimpleTasks.ino
-   A very simple example of how to use task manager to schedule tasks to be done
+/*-------------------------------------------------------------
+    Servo Follow Focus
+    Dual-Mode Servo Follow Focus with 2-Stage smoothing, Potentiometer, tiny Screen and Sleep Mode
 
-   In this example we demonstrate how to create tasks that execute at a point in time,
-   that repeat at a given interval, and tasks that are executed as soon as possible
-   by task manager. We also show how to cancel a running task.
+    Parts:
+     ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)
+     0.42" 32x64 OLED I2C Screen
+     25g S0025M Servo (0.06-0.08ms, 3KG, 333Hz, 2BB, MG)
+     10k Potentiometer
+     1x Momentary Button
+     INA219 Voltage Current Meter
+     2S BMS Balance Module
+     2S Battery Charger TP5100
+     6v 3A Buck Voltage Converter
+     2x 18650 Battery
+     3D Printed enclosure (files coming to thingyverse)
+     22/24AWG Wires
+     M3 Screws, M3 Inserts
 
-*/
+   ChangeLog
+     - added button double click detection
 
-// To use task manager we must include the library
+   by eBender
+  -------------------------------------------------------------*/
+
+
 #include <Arduino.h>
 #include "TaskManagerIO.h"
 #include <Wire.h>
@@ -87,11 +102,11 @@ void setup() {
     u8g2.sendBuffer();
   }
 
-  taskManager.scheduleFixedRate(50,   getButtons,  TIME_MILLIS);  // 20hz
-  taskManager.scheduleFixedRate(1,    getPoti,     TIME_MILLIS);  // 1000hz
-  taskManager.scheduleFixedRate(3,    writeServo,  TIME_MILLIS);  // 333hz bc servo updates @ 333hz
-  taskManager.scheduleFixedRate(20,   writeScreen, TIME_MILLIS);  // 50fps
-  taskManager.scheduleFixedRate(1,    sleepMode,   TIME_SECONDS); // 1hz
+  taskManager.scheduleFixedRate(50,   getButtons,  TIME_MILLIS);   // 20hz
+  taskManager.scheduleFixedRate(1,    getPoti,     TIME_MILLIS);   // 1000hz
+  taskManager.scheduleFixedRate(3,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+  taskManager.scheduleFixedRate(20,   writeScreen, TIME_MILLIS);   // 50fps
+  taskManager.scheduleFixedRate(1,    sleepMode,   TIME_SECONDS);  // 1hz
 
 }
 
