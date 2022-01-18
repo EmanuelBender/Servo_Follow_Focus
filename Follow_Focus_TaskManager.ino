@@ -19,6 +19,8 @@
 
    ChangeLog
      - added button double click detection
+     - TaskManagerIO integration for more precise update freqs
+     - added automatic idling mode to save more power
 
    by eBender
   -------------------------------------------------------------*/
@@ -31,11 +33,12 @@
 #include "MovingAverage.h"
 #include <ESP32Servo.h>
 #include <U8g2lib.h>
+#include <BasicInterruptAbstraction.h>
 
 
 //=============== ADJUSTABLES ===================================
 
-//#define           DEBUG   // note that smoothing response is skewed by debug mode
+#define           DEBUG   // note that smoothing response is skewed by debug mode
 
 #define           SDA1 21
 #define           SCL1 22
@@ -44,7 +47,8 @@
 #define           potiPin    4
 #define           servoPin   25
 
-#define           smoothValue   120        // Smooth Mode Smoothing 0-255
+byte              spMultiplier = 2;        // tmIO - 1 normal, 2 half speed
+#define           smoothValue   140 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
@@ -52,14 +56,15 @@ unsigned int      potiEnd =     4500.0;    // Poti end stop
 #define           servoEnd      2500
 unsigned int      sleepOff =    30000;     // Power save mode delay in ms
 
+
 const uint8_t*    font = u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
 byte              fontY = 30;
 
 //=============== ADJUSTABLES END ================================
 
-double            potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp;
-unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us;
-bool              buttonIn,   buttonBool, smoothMode;
+double            potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp, idleTemp;
+unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, downtime;
+bool              buttonBool, smoothMode, idleOn;
 
 U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 ResponsiveAnalogRead analog1(potiPin, false);   // Stage 1 Smoothing - pin, sleepmode
@@ -70,7 +75,7 @@ Servo servo;
 void setup() {
 
 #ifdef DEBUG
-  Serial.begin(500000);
+  Serial.begin(115200);
   delay(300);
 #endif
 
@@ -87,10 +92,12 @@ void setup() {
 
   servo.setPeriodHertz(Hertz);
   servo.attach(servoPin, servoStart, servoEnd);   // Attach Servo
+  BasicArduinoInterruptAbstraction interruptAbstraction;
 
   ms = millis();
   buttonTime = ms;
   sleepTimer = ms;
+  idleTemp = potiOut;
 
   fontY += 32;
   for (i = 0; i < 32; i++) {                     // scroll up on startup
@@ -102,28 +109,25 @@ void setup() {
     u8g2.sendBuffer();
   }
 
-  taskManager.scheduleFixedRate(50,   getButtons,  TIME_MILLIS);   // 20hz
-  taskManager.scheduleFixedRate(1,    getPoti,     TIME_MILLIS);   // 1000hz
-  taskManager.scheduleFixedRate(3,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
-  taskManager.scheduleFixedRate(20,   writeScreen, TIME_MILLIS);   // 50fps
-  taskManager.scheduleFixedRate(1,    sleepMode,   TIME_SECONDS);  // 1hz
+  taskManager.setInterruptCallback(interruptTask);
+  taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
+  taskManager.scheduleFixedRate(2 * spMultiplier,    getPoti,     TIME_MILLIS);   // 500hz
+  taskManager.scheduleFixedRate(3 * spMultiplier,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+  taskManager.scheduleFixedRate(20 * spMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
+  taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
+  taskManager.scheduleFixedRate(500,                 idle,        TIME_MILLIS);   // 1hz
 
 }
 
-/*
-  codeTime = micros() - us;
-  logIt("250us getPoti", codeTime);
-
-  void logIt(const char* toLog, unsigned long int cTime) {
-  #ifdef DEBUG
+#ifdef DEBUG
+void logIt(const char* toLog, unsigned long int cTime) {
   Serial.print(millis());
   Serial.print("ms: ");
   Serial.print(cTime);
   Serial.print("us - ");
   Serial.println(toLog);
-  #endif
-  }
-*/
+}
+#endif
 
 void loop() {
   taskManager.runLoop();
