@@ -1,6 +1,7 @@
 #include <pgmspace.h>
 
 
+
 void getButtons() {
 
   if (ms - buttonTime > 500) {       // button inactive 500ms after press
@@ -8,7 +9,7 @@ void getButtons() {
     buttonBool   = false;
 
     if (buttonIn) {
-     logIt("First Button Press");
+
       buttonIn   = false;
       buttonBool = true;
       smoothMode = !smoothMode;
@@ -16,16 +17,12 @@ void getButtons() {
       sleepTimer = ms;
 
       if (smoothMode) {
-        for (i = 0; i < 54; i++) {  // lets Moving Average catch up with new value
+        for (i = 0; i < 60; i++) {  // lets Moving Average catch up with new value
           smooth1.addSample(potiValue);
         }
       }
     }
   } else if (ms - buttonTime > 200 && digitalRead(buttonPin)) {   // else  detect second button press
-
-#ifdef DEBUG
-    logIt("Second Button Press");
-#endif
 
   }
 }
@@ -62,7 +59,8 @@ void writeScreen() {
 
   if (potiOut - potiTemp >= 2 || potiOut - potiTemp <= -2 || buttonBool) {
 
-    potiTemp  = potiOut;
+    Serial.println("                                   ...Screen Update");
+    potiTemp   = potiOut;
     sleepTimer = ms;
 
     u8g2.clearBuffer();

@@ -29,7 +29,7 @@
 #define           potiPin    4
 #define           servoPin   25
 
-#define           smoothValue   50         // Smooth Mode Smoothing 0-255
+#define           smoothValue   60         // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
@@ -60,19 +60,7 @@ void logIt(const char* toLog) {
   Serial.println(toLog);
 }
 
-//
-// here we globally store the task ID of our repeating task, we need this to cancel it later.
-//
-int taskId;
-int taskId2;
 
-//
-// A task can either be a function that takes no parameters and returns void, a class that extends Executable or
-// if you want to call with parameters either ExecWithParameter or ExecWith2Parameters
-//
-//
-// In setup we prepare our tasks, this is what a usual task manager sketch looks like
-//
 void setup() {
 
 #ifdef DEBUG
@@ -108,37 +96,37 @@ void setup() {
     u8g2.sendBuffer();
   }
 
-  taskManager.scheduleFixedRate(10, [] {
-    logIt("10ms writeScreen");
+
+  taskManager.scheduleFixedRate(20, [] {
+    logIt("20ms  writeScreen");
     writeScreen();
   });
 
-  taskManager.scheduleFixedRate(1, [] {
-    logIt("1ms get Poti writeServo");
-    ms = millis();
-    getPoti();
-    writeServo();
-  });
-
-  taskManager.scheduleFixedRate(20, [] {
-    logIt("20ms getButtons");
+  taskManager.scheduleFixedRate(30, [] {
+    logIt("30ms  getButtons");
     getButtons();
   });
 
   taskManager.scheduleFixedRate(1000, [] {
-    logIt("1000ms SleepMode");
+    logIt("1000ms    SleepMode...");
     sleepMode();
   });
 
+  taskManager.scheduleFixedRate(250, onMicrosJobPoti, TIME_MICROS);
+  taskManager.scheduleFixedRate(500, onMicrosJobServo, TIME_MICROS);
+}
 
+void onMicrosJobPoti() {
+  getPoti();
+  logIt("250us getPoti");
+}
+
+void onMicrosJobServo() {
+  ms = millis();
+  writeServo();
+  logIt("500us writeServo");
 }
 
 void loop() {
-  // Optional:
-  // If you wanted to go into a low power mode between tasks, you can use taskManager.microsToNextTask() to determine
-  // how long you can sleep before the next execution. If you use interrupts, ensure the low power mode supports them.
-  //auto delay = taskManager.microsToNextTask();
-  //yourLowPowerMode.sleep(delay);
-
   taskManager.runLoop();
 }
