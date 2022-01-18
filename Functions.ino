@@ -2,6 +2,10 @@
 
 void idle() {  // detect idling to slow CPU and TaskManagerIO down when not explicitly put into sleep mode
 
+#ifdef DEBUG
+  logIt("250ms   idle", '0');
+#endif
+
   if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
     idleTemp = potiOut;
     sleepTimer = ms;
@@ -41,13 +45,13 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
 
     getPoti();
     if (smoothMode) {
-      for (i = 0; i < 150; i++) {  // lets Moving Average catch up with new value
+      for (i = 0; i < 145; i++) {  // lets Moving Average catch up with new value
         smooth1.addSample(potiValue);
       }
     }
     writeServo();
 
-    taskManager.scheduleFixedRate(4,   getPoti,     TIME_MILLIS);   // 250hz
+    taskManager.scheduleFixedRate(3,   getPoti,     TIME_MILLIS);   // 333hz
     taskManager.scheduleFixedRate(3,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
     taskManager.scheduleFixedRate(20,  writeScreen, TIME_MILLIS);   // 50fps
     taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
@@ -76,15 +80,17 @@ void getButtons() {
       }
     }
 #ifdef DEBUG
-    Serial.println("                        Button Press");
+    Serial.println("                          Button Press");
 #endif
+
   } else if (ms - buttonTime < 600) {  // double click
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
-    Serial.println("                        Button 2nd Press");
+    Serial.println("                          Button 2nd Press");
 #endif
   }
+
 #ifdef DEBUG
   codeTime = micros() - us;
   logIt(" 50ms   getButtons", codeTime);
@@ -111,7 +117,11 @@ void getPoti() {
   }
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt("2ms    getPoti", codeTime);
+  if (idleOn) {
+    logIt("80ms   getPoti", codeTime);
+  } else {
+    logIt("3ms    getPoti", codeTime);
+  }
 #endif
 }
 
@@ -133,10 +143,10 @@ void writeServo() {
 void writeScreen() {
   us = micros();
 
-  if (potiOut - potiTemp >= 2 || potiOut - potiTemp <= -2 || buttonBool) {
+  if (potiOut - potiTemp >= 1 || potiOut - potiTemp <= -1 || buttonBool) {
     buttonBool = false;
 #ifdef DEBUG
-    Serial.println("                       Screen Update");
+    Serial.println("                         Screen Update");
 #endif
     potiTemp   = potiOut;
 
@@ -151,7 +161,7 @@ void writeScreen() {
   }
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt("20ms  writeScreen", codeTime);
+  logIt("20ms    writeScreen", codeTime);
 #endif
 }
 
@@ -195,6 +205,6 @@ void sleepMode() {
   }
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt(" 1s     sleepMode", codeTime);
+  logIt("  1s     sleepMode", codeTime);
 #endif
 }

@@ -38,7 +38,7 @@
 
 //=============== ADJUSTABLES ===================================
 
-//#define           DEBUG   // note that response is a little bit skewed by debug mode
+#define           DEBUG   // note that response is a little bit skewed by debug mode
 
 #define           SDA1 21
 #define           SCL1 22
@@ -48,14 +48,14 @@
 #define           servoPin   25
 
 byte              spMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
-#define           smoothValue   100 / spMultiplier // Smooth Mode Smoothing 0-255
+#define           smoothValue   90 / spMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
 unsigned int      sleepOff =    15000;     // Power save mode delay in ms
-#define           idleTimer     3000       // delay before idle  in ms
+#define           idleTimer     2000       // delay before idle  in ms
 
 
 const uint8_t*    font = u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
@@ -63,8 +63,8 @@ byte              fontY = 30;
 
 //=============== ADJUSTABLES END ================================
 
-double            potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp, idleTemp;
-unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, downtime;
+float             potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp,  idleTemp;
+unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, taskID;
 bool              buttonBool, smoothMode, idleOn;
 
 U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -78,6 +78,8 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
   delay(300);
+  Serial.print("CPU: ");
+  Serial.println(getCpuFrequencyMhz());
 #endif
 
   u8g2.begin();
@@ -113,7 +115,7 @@ void setup() {
 
   taskManager.setInterruptCallback(interruptTask);
   taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
-  taskManager.scheduleFixedRate(4 * spMultiplier,    getPoti,     TIME_MILLIS);   // 250hz
+  taskManager.scheduleFixedRate(3 * spMultiplier,    getPoti,     TIME_MILLIS);   // 333hz
   taskManager.scheduleFixedRate(3 * spMultiplier,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * spMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
   taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
