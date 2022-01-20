@@ -17,6 +17,7 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     setCpuFrequencyMhz(80);
     taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
     taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
+    
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
@@ -26,7 +27,6 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
 
     while (ms - sleepTimer > idleTimer) {
       taskManager.runLoop();
-
       if (potiOut - servoTemp >= 3 || potiOut - servoTemp <= -3) {
         break;
       }
@@ -45,7 +45,7 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
 
     getPoti();
     if (smoothMode) {
-      for (i = 0; i < 145; i++) {  // lets Moving Average catch up with new value
+      for (i = 0; i < 145 / tmMultiplier + 5; i++) {  // lets Moving Average catch up with new value
         smooth1.addSample(potiValue);
       }
     }
@@ -67,7 +67,7 @@ void interruptTask(pintype_t thePin) {
 void getButtons() {
   us = micros();
 
-  if (ms - buttonTime > 300) {       // button inactive 300ms after press
+  if (ms - buttonTime > 300) {        // button inactive 300ms after press
 
     buttonBool = true;
     smoothMode = !smoothMode;
@@ -75,7 +75,7 @@ void getButtons() {
     sleepTimer = ms;
 
     if (smoothMode) {
-      for (i = 0; i < 145 / spMultiplier; i++) {  // lets Moving Average catch up with new value
+      for (i = 0; i < 140 / tmMultiplier + 5; i++) {  // lets Moving Average catch up with new value
         smooth1.addSample(potiValue);
       }
     }
@@ -144,10 +144,10 @@ void writeScreen() {
   us = micros();
 
   if (potiOut - potiTemp >= 1 || potiOut - potiTemp <= -1 || buttonBool) {
-    buttonBool = false;
 #ifdef DEBUG
     Serial.println("                         Screen Update");
 #endif
+    buttonBool = false;
     potiTemp   = potiOut;
 
     u8g2.clearBuffer();

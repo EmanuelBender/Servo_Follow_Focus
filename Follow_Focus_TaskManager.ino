@@ -28,15 +28,15 @@
 
 #include <Arduino.h>
 #include "TaskManagerIO.h"
+#include <BasicInterruptAbstraction.h>
 #include <Wire.h>
 #include <ResponsiveAnalogRead.h>
 #include "MovingAverage.h"
 #include <ESP32Servo.h>
 #include <U8g2lib.h>
-#include <BasicInterruptAbstraction.h>
 
 
-//=============== ADJUSTABLES ===================================
+//=============== ADJUSTABLE ===================================
 
 #define           DEBUG   // note that response is a little bit skewed by debug mode
 
@@ -47,8 +47,8 @@
 #define           potiPin    4
 #define           servoPin   25
 
-byte              spMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
-#define           smoothValue   90 / spMultiplier // Smooth Mode Smoothing 0-255
+byte              tmMultiplier = 1;        // tmIO tasks - 1 normal, 2 half speed
+#define           smoothValue   90 / tmMultiplier // Smooth Mode Smoothing 0-255
 #define           expo          3.0        // Input Exponential Curve
 #define           Hertz         333        // 50-333Hz Servo
 unsigned int      potiEnd =     4500.0;    // Poti end stop
@@ -58,10 +58,10 @@ unsigned int      sleepOff =    15000;     // Power save mode delay in ms
 #define           idleTimer     2000       // delay before idle  in ms
 
 
-const uint8_t*    font = u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
-byte              fontY = 30;
+const uint8_t*    font  =       u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
+byte              fontY =       30;
 
-//=============== ADJUSTABLES END ================================
+//=============== ADJUSTABLE END ================================
 
 float             potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp,  idleTemp;
 unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, taskID;
@@ -115,9 +115,9 @@ void setup() {
 
   taskManager.setInterruptCallback(interruptTask);
   taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
-  taskManager.scheduleFixedRate(3 * spMultiplier,    getPoti,     TIME_MILLIS);   // 333hz
-  taskManager.scheduleFixedRate(3 * spMultiplier,    writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
-  taskManager.scheduleFixedRate(20 * spMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
+  taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,     TIME_MILLIS);   // 333hz
+  taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+  taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
   taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
   taskManager.scheduleFixedRate(250,                 idle,        TIME_MILLIS);   // 4hz
 
