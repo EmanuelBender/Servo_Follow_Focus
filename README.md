@@ -7,7 +7,7 @@
 **Features**  <br/>
 - Automatic CPU Idling <br/>
 - Expo Setting <br/>
-- Sleep Mode /w Timer (engages when poti set to 0) <br/>
+- Deep Sleep Mode /w Timer (engages when poti set to 0) <br/>
 - Button switches between:<br/> 
 Normal Mode (Stage 1 Smoothing with ResponsiveAnalogRead) <br/>
 Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/><br/>
