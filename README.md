@@ -1,13 +1,16 @@
 # **Smooth Dual-mode Servo driven Follow Focus**
 **3D printed enclosure, 2-Stage smoothing, Expo Setting, Potentiometer, 0.42" OLED and Sleep Mode for ESP32**
-###### by eBender [Emanuel Bender]
- <br/>
+###### by eBender [Emanuel Bender] 
+<br/>
+
  
 **Features**  <br/>
+- CPU Automatic Idle mode <br/>
+- Sleep Mode Timer (engages when poti set to 0) <br/>
+- Button switches between:<br/> 
 Normal Mode (Stage 1 Smoothing with ResponsiveAnalogRead) <br/>
-Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/>
-Sleep Mode Timer  0-64s - engages when poti set to 0 <br/>
-    
+Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/><br/>
+
 **Specs & Speeds** <br/> 
 Servo Speed:&nbsp;&nbsp; 0.06sec     <br/>
 Servo Update: 333Hz      <br/>
