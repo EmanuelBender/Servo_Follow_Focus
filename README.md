@@ -1,4 +1,4 @@
-# **Servo Follow Focus with Task Manager**
+# **Smooth Servo Follow Focus**
 **Dual-Mode 3D-Printed Servo Follow Focus, 2-Stage smoothing, Expo, Potentiometer, 0.42" OLED and Sleep Mode for ESP32**
 ###### by eBender [Emanuel Bender]
  <br/>
