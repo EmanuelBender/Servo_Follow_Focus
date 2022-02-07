@@ -17,7 +17,6 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     setCpuFrequencyMhz(80);
     taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
     taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
-    
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
