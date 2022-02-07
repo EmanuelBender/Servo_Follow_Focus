@@ -1,5 +1,5 @@
-# **Servo Follow Focus**
-**Dual-Mode 3D-Printed Servo Follow Focus, 2-Stage smoothing, Expo, Potentiometer, 0.42" OLED and Sleep Mode for ESP32**
+# **Smooth Dual-mode Servo driven Follow Focus**
+**the smoothest Servo Follow Focus, 3D printed enclosure, 2-Stage smoothing, Expo, Potentiometer, 0.42" OLED and Sleep Mode for ESP32**
 ###### by eBender [Emanuel Bender]
  <br/>
  
