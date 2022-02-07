@@ -8,12 +8,10 @@ Normal Mode (Stage 1 Smoothing with ResponsiveAnalogRead) <br/>
 Smooth Mode (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/>
 Sleep Mode Timer  0-64s - engages when poti set to 0 <br/>
     
-**Specs** <br/> 
+**Specs & Speeds** <br/> 
 Servo Speed S0025M: 0.06sec     <br/>
-
-**Update Speeds**    <br/>
+Servo Update: 333Hz      <br/>
 Poti: 333Hz      <br/>
-Servo: 333Hz      <br/>
 Screen: 50fps     <br/>
 
 **Variables**  <br/>
