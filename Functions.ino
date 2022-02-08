@@ -13,7 +13,7 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     taskManager.reset();
     setCpuFrequencyMhz(80);
     taskManager.scheduleFixedRate(100, getPoti,   TIME_MILLIS);   // 10hz
-    taskManager.scheduleFixedRate(1,   sleepMode, TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(1,   getSleepMode, TIME_SECONDS);  // 1hz
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
@@ -40,11 +40,13 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     Serial.println("Mhz");
 #endif
 
-    taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,     TIME_MILLIS);   // 333hz
-    taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
-    taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
-    taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
-    taskManager.scheduleFixedRate(250,                 idle,        TIME_MILLIS);   // 4hz
+    taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
+    taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+    taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
+    if (!sleepMode) {
+      taskManager.scheduleFixedRate(1,                 getSleepMode, TIME_SECONDS);  // 1hz
+    }
+    taskManager.scheduleFixedRate(250,                 idle,         TIME_MILLIS);   // 4hz
     taskManager.runLoop();
   }
 
@@ -79,6 +81,7 @@ void getButtons() {
 #endif
 
   } else if (ms - buttonTime < 600) {  // double click detection
+    sleepMode  = !sleepMode;
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
@@ -157,7 +160,7 @@ void writeScreen() {
 }
 
 
-void sleepMode() {
+void getSleepMode() {
   us = micros();
 
   if (potiOut < 510) {   //  only activate sleep when poti is near 0. change to 'potiOut > 2495' for the other end
