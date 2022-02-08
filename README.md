@@ -22,7 +22,7 @@ Screen: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 smoothValue&nbsp;       0-255 -    applies Moving Average smoothing strength <br/>
 Expo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  0.0-4.0 -  applies exponential curve to the poti input <br/>
 Hertz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       50-333Hz - for different Servo models and update speeds <br/>
-TaskManagerIO speed 1-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       changes update frequency off all tasks and subsequent update speeds  <br/>
+TaskManagerIO speed 1-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       changes update frequency of all tasks and subsequent update speeds  <br/>
 <br/>
 
 **Parts** <br/>
