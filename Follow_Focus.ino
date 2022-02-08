@@ -29,7 +29,7 @@
      - ResponisveAnalogRead - Damien Clarke
 
    Issues
-     - when poti set close to 0, button switches onoff on its own
+     - doesnt go into sleep mode, switches smoothMode/button instead...?!
 
   -------------------------------------------------------------*/
 
@@ -62,10 +62,10 @@ byte              tmMultiplier = 1;        // variable task update frequency - 1
 unsigned int      potiEnd =     4500.0;    // Poti end stop (reduce for less poti range - scaling correctly)
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
-bool              sleepMode =   true;
+bool              sleepMode =   false;     // button double click switches sleepMode as well
 unsigned int      sleepOff =    15000;     // deep Sleep in ms
 #define           idleTimer     3000       // idle in ms
-
+unsigned int      sleepID;
 #define           font u8g2_font_logisoso28_tn   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28,  (u8g2_font_battery19_tn - Battery 19px)
 byte              fontY =       30;
 
@@ -126,11 +126,10 @@ void setup() {
   taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
   taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
-  if (!sleepMode) {
-    taskManager.scheduleFixedRate(1,                 getSleepMode, TIME_SECONDS);  // 1hz
+  if (sleepMode) {
+    sleepID = taskManager.scheduleFixedRate(1,       getSleepMode, TIME_SECONDS);  // 1hz
   }
   taskManager.scheduleFixedRate(250,                 idle,         TIME_MILLIS);   // 4hz
-  // taskManager.setTaskEnabled(sleepMode, disabled);
 
 }
 

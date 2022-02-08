@@ -4,7 +4,7 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
   us = micros();
 
   if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
-    idleTemp = potiOut;
+    idleTemp   = potiOut;
     sleepTimer = ms;
   }
 
@@ -12,8 +12,10 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     idleOn = true;
     taskManager.reset();
     setCpuFrequencyMhz(80);
-    taskManager.scheduleFixedRate(100, getPoti,   TIME_MILLIS);   // 10hz
-    taskManager.scheduleFixedRate(1,   getSleepMode, TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(100,            getPoti,      TIME_MILLIS);   // 10hz
+    if (sleepMode) {
+      sleepID = taskManager.scheduleFixedRate(1,  getSleepMode, TIME_SECONDS);  // 1hz
+    }
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
@@ -30,7 +32,7 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
 
     taskManager.reset();
     setCpuFrequencyMhz(240);
-    idleOn = false;
+    idleOn   = false;
     idleTemp = potiOut;
 #ifdef DEBUG
     Serial.println("");
@@ -43,8 +45,8 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
     taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
     taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
-    if (!sleepMode) {
-      taskManager.scheduleFixedRate(1,                 getSleepMode, TIME_SECONDS);  // 1hz
+    if (sleepMode) {
+      sleepID = taskManager.scheduleFixedRate(1,       getSleepMode, TIME_SECONDS);  // 1hz
     }
     taskManager.scheduleFixedRate(250,                 idle,         TIME_MILLIS);   // 4hz
     taskManager.runLoop();
@@ -77,15 +79,22 @@ void getButtons() {
       }
     }
 #ifdef DEBUG
-    Serial.println("                          Button Press");
+    Serial.println("                        Button Press");
 #endif
 
   } else if (ms - buttonTime < 600) {  // double click detection
     sleepMode  = !sleepMode;
+    if (sleepMode) {
+      sleepID = taskManager.scheduleFixedRate(1, getSleepMode, TIME_SECONDS);  // 1hz
+    } else {
+      taskManager.cancelTask(sleepID);
+    }
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
-    Serial.println("                          Button Double Press");
+    Serial.println("                        Button Double Press");
+    Serial.print("                        Sleep Mode: ");
+    Serial.println(sleepMode);
 #endif
   }
 
@@ -190,7 +199,7 @@ void getSleepMode() {
         }
 
         if (ms - sleepTimer > sleepOff) {
-          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = pinHigh, 0 = pinLow
+          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = activeHigh, 0 = activeLow
           u8g2.sleepOn();
           esp_deep_sleep_start();
         }
