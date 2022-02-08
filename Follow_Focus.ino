@@ -1,8 +1,9 @@
 /*-------------------------------------------------------------
     Servo Follow Focus v1
     Dual-Mode Servo Follow Focus with 2-Stage smoothing, Potentiometer, tiny Screen and Sleep Mode
+     by eBender
 
-    Parts:
+    Parts
      ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)
      0.42" 32x64 OLED I2C Screen
      25g S0025M Servo (0.06-0.08ms, 3KG, 333Hz, 2BB, MG)
@@ -22,13 +23,14 @@
      - TaskManagerIO integration for more precise update freqs
      - added automatic idling mode to save more power
 
-   by eBender
+   Credits
+     - TaskManagerIO - Dave Cherry, Jorropo
+     - Moving Average - Jack Christensen
+     - ResponisveAnalogRead - Damien Clarke
 
-   Credits:
-   - TaskManagerIO - Dave Cherry, Jorropo
-   - Moving Average - Jack Christensen
-   - ResponisveAnalogRead - Damien Clarke
-   
+   Issues
+     - when poti set to 0, button glitches on off
+
   -------------------------------------------------------------*/
 
 
@@ -60,11 +62,11 @@ byte              tmMultiplier = 1;        // tmIO tasks - 1 normal, 2 half spee
 unsigned int      potiEnd =     4500.0;    // Poti end stop
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
-unsigned int      sleepOff =    15000;     // Power save mode delay in ms
-#define           idleTimer     2000       // delay before idle  in ms
+unsigned int      sleepOff =    15000;     // delay before deep Sleep in ms
+#define           idleTimer     3000       // delay before idle in ms
 
-const uint8_t*    font  =       u8g2_font_logisoso28_tn;   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28 ///  u8g2_font_battery19_tn - Battery 19px
-byte              fontY =       30;
+#define           font u8g2_font_logisoso28_tn   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28,  (u8g2_font_battery19_tn - Battery 19px)
+byte              fontY =   30;
 
 //=============== ADJUSTABLE END ================================
 
@@ -73,8 +75,8 @@ unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, task
 bool              buttonBool, smoothMode, idleOn;
 
 U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-ResponsiveAnalogRead analog1(potiPin, false);   // Stage 1 Smoothing - pin, sleepmode
-MovingAverage smooth1(smoothValue);             // Stage 2 Smoothing
+ResponsiveAnalogRead analog1(potiPin, false);  // Stage 1 Smoothing - pin, sleepmode
+MovingAverage smooth1(smoothValue);            // Stage 2 Smoothing
 Servo servo;
 
 
@@ -125,6 +127,7 @@ void setup() {
   taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
   taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
   taskManager.scheduleFixedRate(250,                 idle,        TIME_MILLIS);   // 4hz
+  // taskManager.setTaskEnabled(sleepMode, disabled);
 
 }
 

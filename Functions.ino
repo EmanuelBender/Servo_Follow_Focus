@@ -1,10 +1,7 @@
 #include <pgmspace.h>
 
-void idle() {  // detect idling to slow CPU and TaskManagerIO down when not explicitly put into sleep mode
-
-#ifdef DEBUG
-  logIt("250ms   idle", '0');
-#endif
+void idle() { // detect idling to slow CPU and TaskManagerIO down when not explicitly put into sleep mode
+  us = micros();
 
   if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
     idleTemp = potiOut;
@@ -15,8 +12,8 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     idleOn = true;
     taskManager.reset();
     setCpuFrequencyMhz(80);
-    taskManager.scheduleFixedRate(80,  getPoti,     TIME_MILLIS);   // 12,5hz
-    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(100, getPoti,   TIME_MILLIS);   // 10hz
+    taskManager.scheduleFixedRate(1,   sleepMode, TIME_SECONDS);  // 1hz
 #ifdef DEBUG
     Serial.println("Idling...");
     Serial.print("CPU: ");
@@ -36,27 +33,26 @@ void idle() {  // detect idling to slow CPU and TaskManagerIO down when not expl
     idleOn = false;
     idleTemp = potiOut;
 #ifdef DEBUG
-    Serial.println("Normal Speed");
+    Serial.println("");
+    Serial.println("Normal Mode");
     Serial.print("CPU: ");
     Serial.print(getCpuFrequencyMhz());
     Serial.println("Mhz");
 #endif
 
-    getPoti();
-    if (smoothMode) {
-      for (i = 0; i < 145 / tmMultiplier + 5; i++) {  // lets Moving Average catch up with new value
-        smooth1.addSample(potiValue);
-      }
-    }
-    writeServo();
-
-    taskManager.scheduleFixedRate(3,   getPoti,     TIME_MILLIS);   // 333hz
-    taskManager.scheduleFixedRate(3,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
-    taskManager.scheduleFixedRate(20,  writeScreen, TIME_MILLIS);   // 50fps
-    taskManager.scheduleFixedRate(1,   sleepMode,   TIME_SECONDS);  // 1hz
-    taskManager.scheduleFixedRate(250, idle,        TIME_MILLIS);   // 4hz
+    taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,     TIME_MILLIS);   // 333hz
+    taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,  TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+    taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen, TIME_MILLIS);   // 50fps
+    taskManager.scheduleFixedRate(1,                   sleepMode,   TIME_SECONDS);  // 1hz
+    taskManager.scheduleFixedRate(250,                 idle,        TIME_MILLIS);   // 4hz
     taskManager.runLoop();
   }
+
+#ifdef DEBUG
+  codeTime = micros() - us;
+  logIt(" 250ms  checkIdle", codeTime);
+#endif
+
 }
 
 void interruptTask(pintype_t thePin) {
@@ -66,15 +62,15 @@ void interruptTask(pintype_t thePin) {
 void getButtons() {
   us = micros();
 
-  if (ms - buttonTime > 300) {        // button inactive 300ms after press
+  if (ms - buttonTime > 300) {                                   // button inactive 300ms after press
 
     buttonBool = true;
     smoothMode = !smoothMode;
     buttonTime = ms;
     sleepTimer = ms;
 
-    if (smoothMode) {
-      for (i = 0; i < 140 / tmMultiplier + 5; i++) {  // lets Moving Average catch up with new value
+    if (smoothMode) {              // lets Moving Average catch up with new value when changing modes
+      for (i = 0; i < 145 / tmMultiplier + 5; i++) {
         smooth1.addSample(potiValue);
       }
     }
@@ -82,11 +78,11 @@ void getButtons() {
     Serial.println("                          Button Press");
 #endif
 
-  } else if (ms - buttonTime < 600) {  // double click
+  } else if (ms - buttonTime < 600) {  // double click detection
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
-    Serial.println("                          Button 2nd Press");
+    Serial.println("                          Button Double Press");
 #endif
   }
 
@@ -105,9 +101,8 @@ void getPoti() {
   potiIn = analog1.getValue();
 
   potiValue = (potiIn * (potiIn * expo / potiEnd + 1.0)) / expo;  // Expo insertion
-
   if (potiValue > potiEnd) potiValue = potiEnd;                   // set Endpoint
-  potiValue = (potiValue / (potiEnd / 2000.0)) + 500.00;          // map to 500 - 2500
+  potiValue = (potiValue / (potiEnd / 2000.0)) + 500.00;          // map to 500 - 2500 for the servo
 
   if (smoothMode && !idleOn) {
     potiOut = smooth1.addSample(potiValue);    // Stage 2 Smooth Mode
@@ -117,13 +112,13 @@ void getPoti() {
 #ifdef DEBUG
   codeTime = micros() - us;
   if (idleOn) {
-    logIt("80ms   getPoti", codeTime);
+    logIt("100ms  getPoti", codeTime);
   } else {
     logIt("3ms    getPoti", codeTime);
   }
 #endif
-}
 
+}
 
 void writeServo() {
   us = micros();
@@ -143,9 +138,6 @@ void writeScreen() {
   us = micros();
 
   if (potiOut - potiTemp >= 1 || potiOut - potiTemp <= -1 || buttonBool) {
-#ifdef DEBUG
-    Serial.println("                         Screen Update");
-#endif
     buttonBool = false;
     potiTemp   = potiOut;
 
@@ -155,7 +147,7 @@ void writeScreen() {
       u8g2.drawHLine(0, 31, 64);
     }
     u8g2.setCursor(0, fontY);
-    u8g2.print((potiOut - 500.0) / 20.0, 2);    // map from 500-2500 to to 0 - 100
+    u8g2.print((potiOut - 500.0) / 20.0, 2);    // map from 500-2500 to 0 - 100
     u8g2.sendBuffer();
   }
 #ifdef DEBUG
@@ -168,7 +160,7 @@ void writeScreen() {
 void sleepMode() {
   us = micros();
 
-  if (potiOut < 504) {   //  only activate sleep when poti is near 0. change to 2496 for the other end
+  if (potiOut < 510) {   //  only activate sleep when poti is near 0. change to 'potiOut > 2495' for the other end
     if (ms - sleepTimer > sleepOff - 10000) {
       timeOff = ms;
 
@@ -195,7 +187,7 @@ void sleepMode() {
         }
 
         if (ms - sleepTimer > sleepOff) {
-          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = High, 0 = Low
+          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = pinHigh, 0 = pinLow
           u8g2.sleepOn();
           esp_deep_sleep_start();
         }
@@ -204,6 +196,6 @@ void sleepMode() {
   }
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt("  1s     sleepMode", codeTime);
+  logIt("  1s     sleepMode ", codeTime);
 #endif
 }
