@@ -5,7 +5,7 @@
 
  
 **Features**  <br/>
-- Automatic CPU Idling <br/>
+- Automatic Idling to save power and gear<br/>
 - Expo Setting <br/>
 - Deep Sleep Mode /w Timer (engages when poti set to 0) <br/>
 - Button switches between:<br/> 
@@ -21,7 +21,9 @@ Screen: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 **Variables**  <br/>
 smoothValue&nbsp;       0-255 -    applies Moving Average smoothing strength <br/>
 Expo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  0.0-4.0 -  applies exponential curve to the poti input <br/>
-Hertz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       50-333Hz - for different Servo models and update speeds <br/><br/>
+Hertz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       50-333Hz - for different Servo models and update speeds <br/>
+TaskManagerIO speed 1-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       changes update frequency off all tasks and subsequent update speeds  <br/>
+<br/>
 
 **Parts** <br/>
 ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)  <br/>
