@@ -14,13 +14,13 @@ Smooth Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Stage 1 + Stage 2 Smoothing wit
 
 **Specs & Speeds** <br/> 
 Servo Speed:&nbsp;&nbsp; 0.06sec     <br/>
-Servo Update: 333Hz      <br/>
-Poti: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 333Hz      <br/>
+Servo Update: &nbsp;333Hz      <br/>
+Poti Update: &nbsp;&nbsp;&nbsp; 333Hz      <br/>
 Screen: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50fps     <br/>
 
 **Variables**  <br/>
 smoothValue&nbsp;       0-255 -    applies Moving Average smoothing strength <br/>
-Expo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  0.0-4.0 -  applies exponential curve to the poti input <br/>
+Expo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  0.0-5.0 -  applies exponential curve to the poti input <br/>
 Hertz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       50-333Hz - for different Servo models and update speeds <br/>
 TaskManagerIO speed 1-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       changes update frequency of all tasks and subsequent update speeds  <br/>
 <br/>
