@@ -65,14 +65,13 @@ unsigned int      potiEnd =     4500.0;    // Poti end stop (reduce for less pot
 bool              sleepMode =   false;     // button double click switches sleepMode as well
 unsigned int      sleepOff =    15000;     // deep Sleep in ms
 #define           idleTimer     3000       // idle in ms
-unsigned int      sleepID;
-#define           font u8g2_font_logisoso28_tn   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28,  (u8g2_font_battery19_tn - Battery 19px)
+#define           font          u8g2_font_logisoso28_tn   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28,  (u8g2_font_battery19_tn - Battery 19px)
 byte              fontY =       30;
 
 //=============== ADJUSTABLE END ================================
 
 float             potiIn,     potiOut,    potiValue,  potiTemp,  servoTemp,  idleTemp;
-unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us, taskID;
+unsigned long int buttonTime, codeTime,   sleepTimer, timeOff,   i, ms, us,  taskID, sleepID;
 bool              buttonBool, smoothMode, idleOn;
 
 U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -97,11 +96,11 @@ void setup() {
   u8g2.setFont(font);
 
   Wire.begin(SDA1, SCL1, 400000);
-  if (getCpuFrequencyMhz() != 240) setCpuFrequencyMhz(240);
 
   pinMode(buttonPin, INPUT_PULLDOWN);
   pinMode(potiPin, INPUT_PULLDOWN);
 
+  if (getCpuFrequencyMhz() != 240) setCpuFrequencyMhz(240);
   servo.setPeriodHertz(Hertz);
   servo.attach(servoPin, servoStart, servoEnd);   // Attach Servo
   BasicArduinoInterruptAbstraction interruptAbstraction;
@@ -111,20 +110,20 @@ void setup() {
   sleepTimer = ms;
   idleTemp   = potiOut;
 
-  fontY += 32;
-  for (i = 0; i <= 32; i++) {                     // scroll screen up on startup
+
+  for (i = 64; i >= 32; i--) {                   // screen roll-in on startup
     getPoti();
-    fontY--;
+    writeServo(); // for eager creators
     u8g2.clearBuffer();
-    u8g2.setCursor(0, fontY);
-    u8g2.print((potiOut - 500.0) / 20.0, 2);     // map to 0 - 100
+    u8g2.setCursor(0, i);
+    u8g2.print((potiOut - 500.0) / 20.0, 2);   // map to 0 - 100
     u8g2.sendBuffer();
   }
 
   taskManager.setInterruptCallback(interruptTask);
   taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
-  taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
-  taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+  taskManager.scheduleFixedRate(3  * tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
+  taskManager.scheduleFixedRate(3  * tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
   if (sleepMode) {
     sleepID = taskManager.scheduleFixedRate(1,       getSleepMode, TIME_SECONDS);  // 1hz

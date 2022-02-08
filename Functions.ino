@@ -42,8 +42,8 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     Serial.println("Mhz");
 #endif
 
-    taskManager.scheduleFixedRate(3 *  tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
-    taskManager.scheduleFixedRate(3 *  tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
+    taskManager.scheduleFixedRate(3  * tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
+    taskManager.scheduleFixedRate(3  * tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
     taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
     if (sleepMode) {
       sleepID = taskManager.scheduleFixedRate(1,       getSleepMode, TIME_SECONDS);  // 1hz
