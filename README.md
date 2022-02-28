@@ -1,5 +1,5 @@
 # **Smooth Dual-mode Servo driven Follow Focus**
-**TaskManagerIO, 0.42" OLED, Potentiometer, 3D printed enclosure, 2-Stage smoothing, Expo Setting, and Sleep Mode for ESP32**
+**TaskManagerIO, 0.42" OLED, Potentiometer, 3D printed enclosure, 2-Stage smoothing, Expo Setting, Auto- idle and Sleep Mode for ESP32**
 ###### by eBender [Emanuel Bender] 
 <br/>
 
@@ -26,9 +26,9 @@ TaskManagerIO speed 1-4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       changes update
 <br/>
 
 **Parts** <br/>
-ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)  <br/>
+ESP32 (minimum: Microcontroller /w I2C, 1 ADC Input, 1 Digital Input, 1 PWM Output)  <br/>
 0.42" 32x64 OLED I2C Screen  <br/>
-25g S0025M Servo (0.06-0.08s, 3KG, 333Hz, 2BB, MG)  <br/>
+25g S0025M Servo (0.06-0.08s, 2.6-3KG, 333Hz, 2BB, MG)  <br/>
 10k Potentiometer  <br/>
 1x Momentary Button  <br/>
 INA219 Voltage Current Meter  <br/>
