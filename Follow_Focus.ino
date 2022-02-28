@@ -20,13 +20,13 @@
      M3 Screws, M3 Inserts
 
    ChangeLog
-     - fixed sleep Mode
+     - fixed sleep Mode bug
      - added idle indicator UI message
      - added Sleep Mode selection UI message
 
    Issues
-     - idle mode not engaging while still displaying idle message for first few times
-
+     - button might need to be de-bounced
+     
    Credits
      - TaskManagerIO - Dave Cherry, Jorropo
      - Moving Average - Jack Christensen

@@ -153,14 +153,13 @@ void getPoti() {
     potiOut = potiValue;
   }
 
-  if (idleOn && potiOut - idleTemp >= 4 || potiOut - idleTemp <= -4) { // trigger wakeup with poti movement +-3
+  if (potiOut - idleTemp >= 4 || potiOut - idleTemp <= -4) { // trigger wakeup with poti movement +-4
     idleTemp   = potiOut;
     sleepTimer = ms;
   }
 
 #ifdef DEBUG
   codeTime = micros() - us;
-
   if (idleOn) {
     logIt("125ms  getPoti", codeTime);
   } else {
