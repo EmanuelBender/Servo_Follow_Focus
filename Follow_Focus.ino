@@ -1,12 +1,13 @@
 /*-------------------------------------------------------------
     Servo Follow Focus v1
-    Dual-Mode Servo Follow Focus with 2-Stage smoothing, Potentiometer, tiny Screen and Sleep Mode
+    Dual-Mode Servo Follow Focus with 2-Stage smoothing, Potentiometer,
+    tiny Screen, auto Idle and Sleep Mode
      by eBender
 
     Parts
-     ESP32 (minimum: Microcontroller /w I2C, 2 Inputs, 1 PWM Output)
+     ESP32 (minimum: Microcontroller /w I2C, 1 ADC Input, 1 Digital Input, 1 PWM Output)
      0.42" 32x64 OLED I2C Screen
-     25g S0025M Servo (0.06-0.08ms, 3KG, 333Hz, 2BB, MG)
+     25g S0025M Servo (0.06-0.08ms, 2.6-3KG, 333Hz, 2BB, MG)
      10k Potentiometer
      1x Momentary Button
      INA219 Voltage Current Meter
@@ -19,18 +20,17 @@
      M3 Screws, M3 Inserts
 
    ChangeLog
-     - added button double click detection
-     - TaskManagerIO integration for more precise update freqs
-     - added automatic idling mode to save more power
+     - fixed sleep Mode
+     - added idle indicator UI message
+     - added Sleep Mode selection UI message
+
+   Issues
+     - idle mode not engaging while still displaying idle message for first few times
 
    Credits
      - TaskManagerIO - Dave Cherry, Jorropo
      - Moving Average - Jack Christensen
      - ResponisveAnalogRead - Damien Clarke
-
-   Issues
-     - doesnt go into sleep mode, switches smoothMode/button instead...?!
-
   -------------------------------------------------------------*/
 
 
@@ -48,8 +48,8 @@
 
 #define           DEBUG   // note that response time is being slowed by debug mode
 
-#define           SDA1 21
-#define           SCL1 22
+#define           SDA 21
+#define           SCL 22
 
 #define           buttonPin  2
 #define           potiPin    4
@@ -62,11 +62,11 @@ byte              tmMultiplier = 1;        // variable task update frequency - 1
 unsigned int      potiEnd =     4500.0;    // Poti end stop (reduce for less poti range - scaling correctly)
 #define           servoStart    500        // Servo 500um-2500um pulse width
 #define           servoEnd      2500
-bool              sleepMode =   false;     // button double click switches sleepMode as well
-unsigned int      sleepOff =    15000;     // deep Sleep in ms
-#define           idleTimer     3000       // idle in ms
+bool              sleepMode =   true;      // button double click switches sleepMode
+unsigned int      sleepOff =    25000;     // deep Sleep in ms (don't put below 15000)
+#define           idleTimer     5000       // idle in ms
 #define           font          u8g2_font_logisoso28_tn   // u8g2_font_logisoso28_tn @ Y30  -  u8g2_font_helvB24_tn @ Y28,  (u8g2_font_battery19_tn - Battery 19px)
-byte              fontY =       30;
+byte              fontY =       30;        // font y position in px
 
 //=============== ADJUSTABLE END ================================
 
@@ -93,17 +93,18 @@ void setup() {
   u8g2.clearBuffer();
   u8g2.setFontDirection(0);
   u8g2.setFontMode(1);
+  u8g2.setDrawColor(1);
   u8g2.setFont(font);
 
-  Wire.begin(SDA1, SCL1, 400000);
+  Wire.begin(SDA, SCL, 400000);
 
   pinMode(buttonPin, INPUT_PULLDOWN);
   pinMode(potiPin, INPUT_PULLDOWN);
 
-  if (getCpuFrequencyMhz() != 240) setCpuFrequencyMhz(240);
+  if (getCpuFrequencyMhz() != 240) setCpuFrequencyMhz(240); // for coming out of sleep mode
   servo.setPeriodHertz(Hertz);
-  servo.attach(servoPin, servoStart, servoEnd);   // Attach Servo
-  BasicArduinoInterruptAbstraction interruptAbstraction;
+  servo.attach(servoPin, servoStart, servoEnd);   // attach Servo
+  BasicArduinoInterruptAbstraction interruptAbstraction;  // INT for button
 
   ms = millis();
   buttonTime = ms;
@@ -113,22 +114,23 @@ void setup() {
 
   for (i = 64; i >= 32; i--) {                   // screen roll-in on startup
     getPoti();
-    writeServo(); // for eager creators
+    writeServo();
     u8g2.clearBuffer();
     u8g2.setCursor(0, i);
-    u8g2.print((potiOut - 500.0) / 20.0, 2);   // map to 0 - 100
+    u8g2.print((potiOut - 500.0) / 20.0, 2);     // map to 0 - 100
     u8g2.sendBuffer();
   }
 
-  taskManager.setInterruptCallback(interruptTask);
+  taskManager.setInterruptCallback(interruptTask);   // add interrupt routine for the button input
   taskManager.addInterrupt(&interruptAbstraction, buttonPin, RISING);
+
   taskManager.scheduleFixedRate(3  * tmMultiplier,   getPoti,      TIME_MILLIS);   // 333hz
   taskManager.scheduleFixedRate(3  * tmMultiplier,   writeServo,   TIME_MILLIS);   // 333hz bc servo updates @ 333hz
   taskManager.scheduleFixedRate(20 * tmMultiplier,   writeScreen,  TIME_MILLIS);   // 50fps
   if (sleepMode) {
     sleepID = taskManager.scheduleFixedRate(1,       getSleepMode, TIME_SECONDS);  // 1hz
   }
-  taskManager.scheduleFixedRate(250,                 idle,         TIME_MILLIS);   // 4hz
+  taskManager.scheduleFixedRate(1,                   idle,         TIME_SECONDS);  // 1hz
 
 }
 

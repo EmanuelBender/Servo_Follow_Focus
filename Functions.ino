@@ -3,18 +3,27 @@
 void idle() { // detect idling to slow CPU and TaskManagerIO down when not explicitly put into sleep mode
   us = micros();
 
-  if (potiOut - idleTemp >= 3 || potiOut - idleTemp <= -3) {
-    idleTemp   = potiOut;
-    sleepTimer = ms;
-  }
-
   if (ms - sleepTimer > idleTimer) {
+    // u8g2.clearBuffer();
+    u8g2.setDrawColor(0);
+    u8g2.drawRBox(15, 8, 36, 18, 5);
+    u8g2.setDrawColor(1);
+    u8g2.setFont(u8g2_font_freedoomr10_tu);
+    u8g2.setCursor(16, 24);
+    u8g2.print("IDLE");
+
+    // u8g2.setFont(u8g2_font_tenstamps_mn);
+    // u8g2.setCursor(5, 27);
+    // u8g2.print((potiOut - 500.0) / 20.0, 2);
+    u8g2.sendBuffer();
+
     idleOn = true;
     taskManager.reset();
     setCpuFrequencyMhz(80);
-    taskManager.scheduleFixedRate(100,            getPoti,      TIME_MILLIS);   // 10hz
+    taskManager.scheduleFixedRate(125,              getPoti,      TIME_MILLIS);   // 8hz
+    // taskManager.scheduleFixedRate(2 * tmMultiplier, writeScreen,  TIME_SECONDS);
     if (sleepMode) {
-      sleepID = taskManager.scheduleFixedRate(1,  getSleepMode, TIME_SECONDS);  // 1hz
+      sleepID = taskManager.scheduleFixedRate(1,    getSleepMode, TIME_SECONDS);  // 1hz
     }
 #ifdef DEBUG
     Serial.println("Idling...");
@@ -25,7 +34,7 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
 
     while (ms - sleepTimer > idleTimer) {
       taskManager.runLoop();
-      if (potiOut - servoTemp >= 3 || potiOut - servoTemp <= -3) {
+      if (potiOut - servoTemp >= 4 || potiOut - servoTemp <= -4) {
         break;
       }
     }
@@ -34,6 +43,8 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
     setCpuFrequencyMhz(240);
     idleOn   = false;
     idleTemp = potiOut;
+    u8g2.setFont(font);
+
 #ifdef DEBUG
     Serial.println("");
     Serial.println("Normal Mode");
@@ -54,7 +65,7 @@ void idle() { // detect idling to slow CPU and TaskManagerIO down when not expli
 
 #ifdef DEBUG
   codeTime = micros() - us;
-  logIt(" 250ms  checkIdle", codeTime);
+  logIt(" 1s     checkIdle", codeTime);
 #endif
 
 }
@@ -82,13 +93,33 @@ void getButtons() {
     Serial.println("                        Button Press");
 #endif
 
-  } else if (ms - buttonTime < 600) {  // double click detection
+  } else if (ms - buttonTime < 750) {  // double click detection
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_freedoomr10_tu);
+
+    if (!sleepMode) {
+      u8g2.setCursor(13, 14);
+      u8g2.print("SLEEP");
+      u8g2.setCursor(4, 30);
+      u8g2.print("ENABLED");
+    } else if (sleepMode) {
+      u8g2.setCursor(13, 14);
+      u8g2.print("SLEEP");
+      u8g2.setCursor(0, 30);
+      u8g2.print("DISABLED");
+    }
+    u8g2.sendBuffer();
+    delay(1000);
+    u8g2.clearBuffer();
+    u8g2.setFont(font);
+
     sleepMode  = !sleepMode;
     if (sleepMode) {
       sleepID = taskManager.scheduleFixedRate(1, getSleepMode, TIME_SECONDS);  // 1hz
     } else {
       taskManager.cancelTask(sleepID);
     }
+    buttonBool = true;
     buttonTime = ms;
     sleepTimer = ms;
 #ifdef DEBUG
@@ -121,10 +152,17 @@ void getPoti() {
   } else {
     potiOut = potiValue;
   }
+
+  if (idleOn && potiOut - idleTemp >= 4 || potiOut - idleTemp <= -4) { // trigger wakeup with poti movement +-3
+    idleTemp   = potiOut;
+    sleepTimer = ms;
+  }
+
 #ifdef DEBUG
   codeTime = micros() - us;
+
   if (idleOn) {
-    logIt("100ms  getPoti", codeTime);
+    logIt("125ms  getPoti", codeTime);
   } else {
     logIt("3ms    getPoti", codeTime);
   }
@@ -149,6 +187,7 @@ void writeServo() {
 void writeScreen() {
   us = micros();
 
+
   if (potiOut - potiTemp >= 1 || potiOut - potiTemp <= -1 || buttonBool) {
     buttonBool = false;
     potiTemp   = potiOut;
@@ -162,17 +201,19 @@ void writeScreen() {
     u8g2.print((potiOut - 500.0) / 20.0, 2);    // map from 500-2500 to 0 - 100
     u8g2.sendBuffer();
   }
+
 #ifdef DEBUG
   codeTime = micros() - us;
   logIt("20ms    writeScreen", codeTime);
 #endif
+
 }
 
 
 void getSleepMode() {
   us = micros();
 
-  if (potiOut < 510) {   //  only activate sleep when poti is near 0. change to 'potiOut > 2495' for the other end
+  if (potiOut < 530 && idleOn) {   //  only activate sleep when poti is near 0. change to 'potiOut > 2450' for the other end
     if (ms - sleepTimer > sleepOff - 10000) {
       timeOff = ms;
 
@@ -180,28 +221,29 @@ void getSleepMode() {
         ms = millis();
 
         getPoti();
-        getButtons();
+        // getButtons();
 
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_freedoomr10_tu);
-        u8g2.setCursor(14, 12);
+        u8g2.setCursor(13, 12);
         u8g2.print("SLEEP");
 
         u8g2.setFont(u8g2_font_tenstamps_mn);
-        u8g2.setCursor(28, 26);
+        u8g2.setCursor(27, 26);
         u8g2.print((((ms - timeOff) * -1) + 10000) / 1000);
         u8g2.sendBuffer();
+
+        if (ms - sleepTimer > sleepOff) {
+          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = activeHigh, 0 = activeLow
+          u8g2.sleepOn();
+          servo.detach();
+          esp_deep_sleep_start();
+        }
 
         if (potiOut - servoTemp >= 4 || potiOut - servoTemp <= -4 || buttonBool) {
           u8g2.setFont(font);
           sleepTimer = ms;
           break;
-        }
-
-        if (ms - sleepTimer > sleepOff) {
-          esp_sleep_enable_ext0_wakeup(GPIO_NUM_2, 1); // 1 = activeHigh, 0 = activeLow
-          u8g2.sleepOn();
-          esp_deep_sleep_start();
         }
       }
     }
