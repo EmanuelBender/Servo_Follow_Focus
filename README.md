@@ -1,4 +1,4 @@
-# **Smooth Dual-mode Servo driven Follow Focus**
+# **Smooth Dual-mode Servo Follow Focus**
 **TaskManagerIO, 0.42" OLED, Potentiometer, 3D printed enclosure, 2-Stage smoothing, Expo Setting, Auto- idle and Sleep Mode for ESP32**
 ###### by eBender [Emanuel Bender] 
 <br/>
