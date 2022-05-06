@@ -31,7 +31,6 @@ ESP32 (minimum: Microcontroller /w I2C, 1 ADC Input, 1 Digital Input, 1 PWM Outp
 25g S0025M Servo (0.06-0.08s, 2.6-3KG, 333Hz, 2BB, MG)  <br/>
 10k Potentiometer  <br/>
 1x Momentary Button  <br/>
-INA219 Voltage Current Meter  <br/>
 2S BMS Balance Module  <br/>
 2S Battery Charger TP5100  <br/>
 6v 3A Buck Voltage Converter  <br/>
