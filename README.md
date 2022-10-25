@@ -1,5 +1,5 @@
 # **Smooth Dual-mode Servo Follow Focus**
-**TaskManagerIO, 0.42" OLED, Potentiometer, 3D printed enclosure, 2-Stage smoothing, Expo Setting, Auto- idle and Sleep Mode for ESP32**
+**TaskManagerIO, 0.42" OLED, Potentiometer, 3D printed enclosure, 2-Stage smoothing, Expo Setting, Auto- idle, no Jitter and Sleep Mode for ESP32**
 ###### by eBender [Emanuel Bender] 
 <br/>
 
@@ -9,6 +9,7 @@
 - Expo Setting <br/>
 - Deep Sleep Mode /w Timer (engages when poti set to 0) <br/>
 - Button switches between:<br/> 
+- no jitter, integrated deadband
 Responsive Mode (Stage 1 Smoothing with ResponsiveAnalogRead) <br/>
 Smooth Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Stage 1 + Stage 2 Smoothing with Moving Average)  <br/><br/>
 
